@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 	title: "HuyN's NextJS calculator",
 	description:
 		'Developed in the summer before getting into university because HuyN is bored.',
+	icons: './assets/ico.png',
 };
 
 export default function RootLayout({
