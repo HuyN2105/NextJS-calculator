@@ -5,11 +5,12 @@ import { useState } from 'react';
 function Calculator() {
 	const [Num, UpdateNum] = useState(0);
 
-	function NumberFormarter(NumToFormart: number) {
-		var s = NumToFormart.toString();
+	function NumberFormat(NumToFormat: number) {
+		var s = NumToFormat.toString();
+		if (s.length < 3) return s;
 		var startIndex =
 			s.search(',') < 0
-				? Math.trunc(Math.log10(NumToFormart))
+				? Math.trunc(Math.log10(NumToFormat))
 				: s.search(',') - 1;
 		var count = 0;
 		for (var i = startIndex; i > 0; i--) {
@@ -19,15 +20,17 @@ function Calculator() {
 				s = s.substring(0, i) + '.' + s.substring(i, s.length);
 			}
 		}
-		console.log(s);
 		return s;
 	}
 
 	function AddToNum(NumToAdd: number) {
 		UpdateNum(Num * 10 + NumToAdd);
-		if (Math.trunc(Math.log10(Num)) + 1 > 6) {
-			document.getElementById('NumberIndicator')!.style.fontSize = '10px';
-		}
+
+		// TODO: FIX THIS ERROR WITH MAKING NUMBER SMALLER WHEN EXCEEDED A CERTAIN AMOUNT OF LENGTH
+
+		// if (Math.trunc(Math.log10(Num)) + 1 > 6) {
+		// 	document.getElementById('NumberIndicator')!.style.fontSize = '10px';
+		// }
 	}
 
 	return (
@@ -35,10 +38,10 @@ function Calculator() {
 			<div className='w-[430px] h-[860px] rounded-[20px] bg-black fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-semibold text-[35px]'>
 				{/* Number */}
 				<div
-					id='NumberIdicator'
+					id='NumberIndicate'
 					className='w-[346px] h-[70px] fixed top-[218px] left-[42px] text-white text-right text-[90px] font-thin'
 				>
-					<p className='-translate-y-8'>{NumberFormarter(Num)}</p>
+					<p className='-translate-y-8'>{NumberFormat(Num)}</p>
 				</div>
 
 				{/* 1st ROW */}
