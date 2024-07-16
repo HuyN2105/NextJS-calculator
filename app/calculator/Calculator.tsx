@@ -1,22 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function Calculator() {
 	const [Num, UpdateNum] = useState(0);
 	const [OldNum, UpdateOldNum] = useState(0);
-	const [OperationID, UpdateOperationID] = useState(0); // 1: / | 2: * | 3: - | 4: +
-
+	const [OperationID, UpdateOperationID] = useState(0); // 1: / | 2: * | 3: - | 4: + | 5: =
+	const [OldOperation, UpdateOldOperation] = useState(0);
 	const [NumLength, UpdateNumLength] = useState(1);
 
-	function NumberFormat(NumToFormat: number) {
-		if (NumLength < 3) return NumToFormat;
+	const [NumIndicate, UpdateNumIndicate] = useState('0');
+
+	useEffect(() => {
+		if (NumLength < 3) UpdateNumIndicate(Num + '');
 		var IsPositive = true;
-		if (NumToFormat < 0) IsPositive = false;
-		var s = Math.abs(NumToFormat).toString();
+		if (Num < 0) IsPositive = false;
+		var s = Math.abs(Num).toString();
 		var startIndex =
 			s.search(',') < 0
-				? Math.trunc(Math.log10(Math.abs(NumToFormat)))
+				? Math.trunc(Math.log10(Math.abs(Num)))
 				: s.search(',') - 1;
 		var count = 0;
 		for (var i = startIndex; i > 0; i--) {
@@ -26,20 +28,55 @@ function Calculator() {
 				s = s.substring(0, i) + '.' + s.substring(i, s.length);
 			}
 		}
-		return IsPositive ? s : '-' + s;
-	}
+		UpdateNumIndicate((IsPositive ? '' : '-') + s);
+	}, [Num]);
 
 	function AddToNum(NumToAdd: number) {
-		if (Num < 1e8) {
+		if (OperationID != 0) {
+			if (OldNum != 0) {
+				Calculation(0);
+			} else {
+				UpdateOldNum(Num);
+			}
+			UpdateNum(NumToAdd);
+			UpdateNumLength(1);
+		} else if (Num < 1e8) {
 			UpdateNum(Num * 10 + NumToAdd);
 			UpdateNumLength(NumLength + 1);
 		}
 	}
 
-	function Calculation() {}
+	function CalculationOperationPair(num1: number, num2: number) {
+		var Operation = OperationID == 0 ? OldOperation : OperationID;
+		if (OldOperation == 0 && OperationID == 0) return Num;
+		if (Operation == 1) return num1 / num2;
+		if (Operation == 2) return num1 * num2;
+		if (Operation == 3) return num1 - num2;
+		if (Operation == 4) return num1 + num2;
+		return 0;
+	}
+
+	function Calculation(ActionID: number) {
+		// ActionID is for determining whether the calculator should do the calculation needed with the current num and the old num to continue with the math or just display the answer
+		// ActionID: 0: to be continue with the math | 1: display the answer
+
+		// CALCULATION FUNCTION
+		if (ActionID == 0) {
+			console.log('Num: ', Num);
+			UpdateOldNum(CalculationOperationPair(OldNum, Num));
+		} else {
+			UpdateNum(CalculationOperationPair(OldNum, Num));
+		}
+		// SLOW DOWN BITCH
+		UpdateOldOperation(OperationID);
+		UpdateOperationID(0);
+	}
 
 	function EraseNum() {
-		if (Num != 0) {
+		if (OldOperation == 0) {
+			UpdateNum(0);
+			UpdateOldNum(0);
+		} else if (Num != 0) {
 			UpdateNum(0);
 			UpdateNumLength(1);
 		} else if (OldNum != 0) {
@@ -55,7 +92,7 @@ function Calculator() {
 					id='NumberIndicate'
 					className='w-[346px] h-[70px] fixed top-[218px] left-[42px] text-white text-right font-light'
 				>
-					<p className='-translate-y-8 text-[90px]'>{NumberFormat(Num)}</p>
+					<p className='-translate-y-8 text-[90px]'>{NumIndicate}</p>
 				</div>
 
 				{/* CSS STYLE ON CONDITION */}
@@ -132,6 +169,7 @@ function Calculator() {
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[46vh] left-[76%] text-[#fffeff]'
 					onClick={() => UpdateOperationID(2)}
+					id={`${OperationID == 2 ? 'selected' : ''}`}
 				>
 					<div className='w-[33%] h-[4px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff] rotate-45'></div>
 					<div className='w-[33%] h-[4px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff] -rotate-45'></div>
@@ -160,6 +198,7 @@ function Calculator() {
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[57vh] left-[76%] text-[#fffeff]'
 					onClick={() => UpdateOperationID(3)}
+					id={`${OperationID == 3 ? 'selected' : ''}`}
 				>
 					<div className='w-[22px] h-[5px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>
 				</button>
@@ -168,7 +207,7 @@ function Calculator() {
 
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[68vh] left-[4%] text-white font-normal text-[40px]'
-					onClick={() => UpdateOperationID(4)}
+					onClick={() => AddToNum(1)}
 				>
 					1
 				</button>
@@ -186,7 +225,8 @@ function Calculator() {
 				</button>
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[68vh] left-[76%] text-[#fffeff]'
-					onClick={() => AddToNum(0)}
+					onClick={() => UpdateOperationID(4)}
+					id={`${OperationID == 4 ? 'selected' : ''}`}
 				>
 					<div className='w-[22px] h-[4px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>
 					<div className='w-[22px] h-[4px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff] rotate-90'></div>
@@ -209,7 +249,7 @@ function Calculator() {
 				</button>
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[79vh] left-[76%] text-[#fffeff]'
-					onClick={() => AddToNum(0)}
+					onClick={() => Calculation(1)}
 				>
 					<div className='w-[22px] h-[4px] absolute top-[39px] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>
 					<div className='w-[22px] h-[4px] absolute top-[50px] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>
