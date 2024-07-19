@@ -6,8 +6,8 @@ function Calculator() {
 	const [Num, UpdateNum] = useState(0);
 	const [OldNum, UpdateOldNum] = useState(0);
 	const [OperationID, UpdateOperationID] = useState(0); // 1: / | 2: * | 3: - | 4: + | 5: =
-	const [OldOperation, UpdateOldOperation] = useState(0);
-	const [NumLength, UpdateNumLength] = useState(1);
+	const [OngoingOperationID, UpdateOngoingOperationID] = useState(0);
+	const [NumLength, UpdateNumLength] = useState(0);
 
 	const [NumIndicate, UpdateNumIndicate] = useState('0');
 
@@ -16,16 +16,13 @@ function Calculator() {
 		var IsPositive = true;
 		if (Num < 0) IsPositive = false;
 		var s = Math.abs(Num).toString();
-		var startIndex =
-			s.search(',') < 0
-				? Math.trunc(Math.log10(Math.abs(Num)))
-				: s.search(',') - 1;
+		var startIndex = s.search('.') - 1 < 0 ? NumLength - 1 : s.search('.') - 1;
 		var count = 0;
 		for (var i = startIndex; i > 0; i--) {
 			count++;
 			if (count == 3) {
 				count = 0;
-				s = s.substring(0, i) + '.' + s.substring(i, s.length);
+				s = s.substring(0, i) + ',' + s.substring(i, s.length);
 			}
 		}
 		UpdateNumIndicate((IsPositive ? '' : '-') + s);
@@ -33,26 +30,42 @@ function Calculator() {
 
 	function AddToNum(NumToAdd: number) {
 		if (OperationID != 0) {
+			UpdateOngoingOperationID(OperationID);
+			UpdateOperationID(0);
 			if (OldNum != 0) {
 				Calculation(0);
 			} else {
 				UpdateOldNum(Num);
 			}
 			UpdateNum(NumToAdd);
-			UpdateNumLength(1);
+			UpdateNumLength(NumToAdd == 0 ? 0 : 1);
 		} else if (Num < 1e8) {
 			UpdateNum(Num * 10 + NumToAdd);
 			UpdateNumLength(NumLength + 1);
 		}
 	}
 
-	function CalculationOperationPair(num1: number, num2: number) {
-		var Operation = OperationID == 0 ? OldOperation : OperationID;
-		if (OldOperation == 0 && OperationID == 0) return Num;
-		if (Operation == 1) return num1 / num2;
-		if (Operation == 2) return num1 * num2;
-		if (Operation == 3) return num1 - num2;
-		if (Operation == 4) return num1 + num2;
+	function CalculationOperationPair(
+		num1: number,
+		num2: number,
+		OpID: number = OngoingOperationID
+	) {
+		if (OpID == 1) {
+			UpdateNumLength(Math.trunc(Math.log10(num1 / num2)) + 1);
+			return num1 / num2;
+		}
+		if (OpID == 2) {
+			UpdateNumLength(Math.trunc(Math.log10(num1 * num2)) + 1);
+			return num1 * num2;
+		}
+		if (OpID == 3) {
+			UpdateNumLength(Math.trunc(Math.log10(num1 - num2)) + 1);
+			return num1 - num2;
+		}
+		if (OpID == 4) {
+			UpdateNumLength(Math.trunc(Math.log10(num1 + num2)) + 1);
+			return num1 + num2;
+		}
 		return 0;
 	}
 
@@ -62,23 +75,24 @@ function Calculator() {
 
 		// CALCULATION FUNCTION
 		if (ActionID == 0) {
-			console.log('Num: ', Num);
 			UpdateOldNum(CalculationOperationPair(OldNum, Num));
 		} else {
 			UpdateNum(CalculationOperationPair(OldNum, Num));
+			UpdateOldNum(0);
 		}
 		// SLOW DOWN BITCH
-		UpdateOldOperation(OperationID);
+		UpdateOngoingOperationID(OperationID);
 		UpdateOperationID(0);
 	}
 
 	function EraseNum() {
-		if (OldOperation == 0) {
+		if (OngoingOperationID == 0) {
 			UpdateNum(0);
 			UpdateOldNum(0);
+			UpdateNumLength(0);
 		} else if (Num != 0) {
 			UpdateNum(0);
-			UpdateNumLength(1);
+			UpdateNumLength(0);
 		} else if (OldNum != 0) {
 			UpdateOldNum(0);
 		}
@@ -99,12 +113,12 @@ function Calculator() {
 				{/* LOWERING NUMBER FONT SIZE ON NUMBER GETTING LARGER UP TO AVOID SCREEN OVERFLOW */}
 				<style jsx>{`
 					#NumberIndicate p {
-						font-size: ${NumLength > 7
-							? 90 - (NumLength - 7) * 8 + 'px'
+						font-size: ${NumLength > 6
+							? 90 - (NumLength - 6) * 8 + 'px'
 							: '90px'};
 						transform: translate(
 							${0},
-							${NumLength > 7 ? -32 + (NumLength - 7) * 7 + 'px' : '-32px'}
+							${NumLength > 6 ? -32 + (NumLength - 6) * 7 + 'px' : '-32px'}
 						);
 					}
 				`}</style>
