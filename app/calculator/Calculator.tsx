@@ -98,6 +98,13 @@ function Calculator() {
 		}
 	}
 
+	function UpdateOperation(OpID: number) {
+		if (OngoingOperationID != 0 && OperationID == 0) {
+			UpdateNum(CalculationOperationPair(Num, OldNum));
+		}
+		UpdateOperationID(OpID);
+	}
+
 	return (
 		<>
 			<div className='w-[430px] h-[860px] rounded-[20px] bg-black fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-semibold text-[35px]'>
@@ -153,7 +160,7 @@ function Calculator() {
 				</button>
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[35vh] left-[76%] text-[#fffeff]'
-					onClick={() => UpdateOperationID(1)}
+					onClick={() => UpdateOperation(1)}
 				>
 					<div className='w-[5px] h-[5px] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-3 bg-[#fffeff]'></div>
 					<div className='w-[5px] h-[5px] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-1.5 bg-[#fffeff]'></div>
@@ -182,7 +189,7 @@ function Calculator() {
 				</button>
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[46vh] left-[76%] text-[#fffeff]'
-					onClick={() => UpdateOperationID(2)}
+					onClick={() => UpdateOperation(2)}
 					id={`${OperationID == 2 ? 'selected' : ''}`}
 				>
 					<div className='w-[33%] h-[4px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff] rotate-45'></div>
@@ -211,7 +218,7 @@ function Calculator() {
 				</button>
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[57vh] left-[76%] text-[#fffeff]'
-					onClick={() => UpdateOperationID(3)}
+					onClick={() => UpdateOperation(3)}
 					id={`${OperationID == 3 ? 'selected' : ''}`}
 				>
 					<div className='w-[22px] h-[5px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>
@@ -239,7 +246,7 @@ function Calculator() {
 				</button>
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[68vh] left-[76%] text-[#fffeff]'
-					onClick={() => UpdateOperationID(4)}
+					onClick={() => UpdateOperation(4)}
 					id={`${OperationID == 4 ? 'selected' : ''}`}
 				>
 					<div className='w-[22px] h-[4px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>
