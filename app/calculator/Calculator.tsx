@@ -111,7 +111,7 @@ function Calculator() {
 				{/* Number */}
 				<div
 					id='NumberIndicate'
-					className='w-[346px] h-[70px] fixed top-[218px] left-[42px] text-white text-right font-light'
+					className='w-[346px] h-[70px] fixed top-[180px] left-[42px] text-white text-right font-light'
 				>
 					<p className='-translate-y-8 text-[90px]'>{NumIndicate}</p>
 				</div>
@@ -133,13 +133,13 @@ function Calculator() {
 				{/* 1st ROW */}
 
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#a5a5a5] fixed top-[35vh] left-[4%] text-black'
+					className='w-1/5 h-[10%] rounded-full bg-[#a5a5a5] fixed top-[290px] left-[4%] text-black'
 					onClick={() => EraseNum()}
 				>
 					{Num != 0 ? 'C' : 'AC'}
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#a5a5a5] fixed top-[35vh] left-[28%] text-black'
+					className='w-1/5 h-[10%] rounded-full bg-[#a5a5a5] fixed top-[290px] left-[28%] text-black'
 					onClick={() => UpdateNum(Num * -1)}
 				>
 					<div className='absolute text-[20px] top-1/2 left-1/2 -translate-x-[135%] -translate-y-[75%]'>
@@ -153,13 +153,13 @@ function Calculator() {
 					</div>
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#a5a5a5] fixed top-[35vh] left-[52%] text-black'
+					className='w-1/5 h-[10%] rounded-full bg-[#a5a5a5] fixed top-[290px] left-[52%] text-black'
 					onClick={() => UpdateNum(Num / 100)}
 				>
 					%
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[35vh] left-[76%] text-[#fffeff]'
+					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[290px] left-[76%] text-[#fffeff]'
 					onClick={() => UpdateOperation(1)}
 				>
 					<div className='w-[5px] h-[5px] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-3 bg-[#fffeff]'></div>
@@ -170,25 +170,25 @@ function Calculator() {
 				{/* 2nd ROW */}
 
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[46vh] left-[4%] text-white font-normal text-[40px]'
+					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[390px] left-[4%] text-white font-normal text-[40px]'
 					onClick={() => AddToNum(7)}
 				>
 					7
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[46vh] left-[28%] text-white font-normal text-[40px]'
+					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[390px] left-[28%] text-white font-normal text-[40px]'
 					onClick={() => AddToNum(8)}
 				>
 					8
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[46vh] left-[52%] text-white font-normal text-[40px]'
+					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[390px] left-[52%] text-white font-normal text-[40px]'
 					onClick={() => AddToNum(9)}
 				>
 					9
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[46vh] left-[76%] text-[#fffeff]'
+					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[390px] left-[76%] text-[#fffeff]'
 					onClick={() => UpdateOperation(2)}
 					id={`${OperationID == 2 ? 'selected' : ''}`}
 				>
@@ -199,25 +199,25 @@ function Calculator() {
 				{/* 3rd ROW */}
 
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[57vh] left-[4%] text-white font-normal text-[40px]'
+					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[491px] left-[4%] text-white font-normal text-[40px]'
 					onClick={() => AddToNum(4)}
 				>
 					4
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[57vh] left-[28%] text-white font-normal text-[40px]'
+					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[491px] left-[28%] text-white font-normal text-[40px]'
 					onClick={() => AddToNum(5)}
 				>
 					5
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[57vh] left-[52%] text-white font-normal text-[40px]'
+					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[491px] left-[52%] text-white font-normal text-[40px]'
 					onClick={() => AddToNum(6)}
 				>
 					6
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[57vh] left-[76%] text-[#fffeff]'
+					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[491px] left-[76%] text-[#fffeff]'
 					onClick={() => UpdateOperation(3)}
 					id={`${OperationID == 3 ? 'selected' : ''}`}
 				>
@@ -227,25 +227,25 @@ function Calculator() {
 				{/* 4th ROW */}
 
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[68vh] left-[4%] text-white font-normal text-[40px]'
+					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[591px] left-[4%] text-white font-normal text-[40px]'
 					onClick={() => AddToNum(1)}
 				>
 					1
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[68vh] left-[28%] text-white font-normal text-[40px]'
+					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[591px] left-[28%] text-white font-normal text-[40px]'
 					onClick={() => AddToNum(2)}
 				>
 					2
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[68vh] left-[52%] text-white font-normal text-[40px]'
+					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[591px] left-[52%] text-white font-normal text-[40px]'
 					onClick={() => AddToNum(3)}
 				>
 					3
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[68vh] left-[76%] text-[#fffeff]'
+					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[591px] left-[76%] text-[#fffeff]'
 					onClick={() => UpdateOperation(4)}
 					id={`${OperationID == 4 ? 'selected' : ''}`}
 				>
@@ -257,19 +257,19 @@ function Calculator() {
 
 				<button
 					id='ZeroButton'
-					className='w-[43.5%] h-[10%] bg-[#333333] fixed top-[79vh] left-[4%] text-white font-normal text-[40px] text-left pl-8'
+					className='w-[43.5%] h-[10%] bg-[#333333] fixed top-[692px] left-[4%] text-white font-normal text-[40px] text-left pl-8'
 					onClick={() => AddToNum(0)}
 				>
 					0
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[79vh] left-[52%] text-white font-normal text-[40px]'
+					className='w-1/5 h-[10%] rounded-full bg-[#333333] fixed top-[692px] left-[52%] text-white font-normal text-[40px]'
 					onClick={() => AddToNum(0)}
 				>
 					,
 				</button>
 				<button
-					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[79vh] left-[76%] text-[#fffeff]'
+					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[692px] left-[76%] text-[#fffeff]'
 					onClick={() => Calculation(1)}
 				>
 					<div className='w-[22px] h-[4px] absolute top-[39px] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>
