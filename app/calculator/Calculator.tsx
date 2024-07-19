@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 function Calculator() {
 	const [Num, UpdateNum] = useState(0);
-	const [OldNum, UpdateOldNum] = useState(0);
+	const [PreviousNum, UpdatePreviousNum] = useState(0);
 	const [OperationID, UpdateOperationID] = useState(0); // 1: / | 2: * | 3: - | 4: + | 5: =
 	const [OngoingOperationID, UpdateOngoingOperationID] = useState(0);
 	const [NumLength, UpdateNumLength] = useState(0);
@@ -32,10 +32,10 @@ function Calculator() {
 		if (OperationID != 0) {
 			UpdateOngoingOperationID(OperationID);
 			UpdateOperationID(0);
-			if (OldNum != 0) {
+			if (PreviousNum != 0) {
 				Calculation(0);
 			} else {
-				UpdateOldNum(Num);
+				UpdatePreviousNum(Num);
 			}
 			UpdateNum(NumToAdd);
 			UpdateNumLength(NumToAdd == 0 ? 0 : 1);
@@ -75,10 +75,10 @@ function Calculator() {
 
 		// CALCULATION FUNCTION
 		if (ActionID == 0) {
-			UpdateOldNum(CalculationOperationPair(OldNum, Num));
+			UpdatePreviousNum(CalculationOperationPair(PreviousNum, Num));
 		} else {
-			UpdateNum(CalculationOperationPair(OldNum, Num));
-			UpdateOldNum(0);
+			UpdateNum(CalculationOperationPair(PreviousNum, Num));
+			UpdatePreviousNum(0);
 		}
 		// SLOW DOWN BITCH
 		UpdateOngoingOperationID(OperationID);
@@ -88,19 +88,19 @@ function Calculator() {
 	function EraseNum() {
 		if (OngoingOperationID == 0) {
 			UpdateNum(0);
-			UpdateOldNum(0);
+			UpdatePreviousNum(0);
 			UpdateNumLength(0);
 		} else if (Num != 0) {
 			UpdateNum(0);
 			UpdateNumLength(0);
-		} else if (OldNum != 0) {
-			UpdateOldNum(0);
+		} else if (PreviousNum != 0) {
+			UpdatePreviousNum(0);
 		}
 	}
 
 	function UpdateOperation(OpID: number) {
 		if (OngoingOperationID != 0 && OperationID == 0) {
-			UpdateNum(CalculationOperationPair(Num, OldNum));
+			UpdateNum(CalculationOperationPair(Num, PreviousNum));
 		}
 		UpdateOperationID(OpID);
 	}
@@ -161,6 +161,7 @@ function Calculator() {
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[290px] left-[76%] text-[#fffeff]'
 					onClick={() => UpdateOperation(1)}
+					id={`${OperationID == 1 ? 'selected' : ''}`}
 				>
 					<div className='w-[5px] h-[5px] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-3 bg-[#fffeff]'></div>
 					<div className='w-[5px] h-[5px] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-1.5 bg-[#fffeff]'></div>
