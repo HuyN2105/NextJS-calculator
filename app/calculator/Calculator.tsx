@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 
 const Operations = {
-	DEVIDE: 1,
+	DIVIDE: 1,
 	MULTIPLY: 2,
-	SUBSTRACT: 3,
+	SUBTRACT: 3,
 	ADD: 4,
 };
 
@@ -68,7 +68,7 @@ function Calculator() {
 		OpID: number = OngoingOperationID
 	) {
 		switch (OpID) {
-			case Operations.DEVIDE:
+			case Operations.DIVIDE:
 				if (num2 === 0) {
 					UpdateInvalidOperation(true);
 					return 0;
@@ -84,7 +84,7 @@ function Calculator() {
 						: Math.trunc(Math.log10(Math.abs(num1 * num2))) + 1
 				);
 				return num1 * num2;
-			case Operations.SUBSTRACT:
+			case Operations.SUBTRACT:
 				UpdateNumLength(
 					num1 - num2 === 0
 						? 0
