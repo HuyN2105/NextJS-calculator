@@ -2,13 +2,20 @@
 
 import { useEffect, useState } from 'react';
 
+const Operations = {
+	DEVIDE: 1,
+	MULTIPLY: 2,
+	SUBSTRACT: 3,
+	ADD: 4,
+};
+
 function Calculator() {
 	const [Num, UpdateNum] = useState(0);
 	const [PreviousNum, UpdatePreviousNum] = useState(0);
 	const [OperationID, UpdateOperationID] = useState(0); // 1: / | 2: * | 3: - | 4: + | 5: =
 	const [OngoingOperationID, UpdateOngoingOperationID] = useState(0);
 	const [NumLength, UpdateNumLength] = useState(0);
-
+	const [InvalidOperation, UpdateInvalidOperation] = useState(false);
 	const [NumIndicate, UpdateNumIndicate] = useState('0');
 
 	useEffect(() => {
@@ -25,8 +32,17 @@ function Calculator() {
 				s = s.substring(0, i) + ',' + s.substring(i, s.length);
 			}
 		}
-		UpdateNumIndicate((IsPositive ? '' : '-') + s);
-	}, [Num]);
+		UpdateNumIndicate(InvalidOperation ? 'Error' : (IsPositive ? '' : '-') + s);
+	}, [Num, InvalidOperation]);
+
+	function reset() {
+		UpdateNum(0);
+		UpdatePreviousNum(0);
+		UpdateOperationID(0);
+		UpdateOngoingOperationID(0);
+		UpdateNumLength(0);
+		UpdateInvalidOperation(false);
+	}
 
 	function AddToNum(NumToAdd: number) {
 		if (OperationID != 0) {
@@ -40,7 +56,8 @@ function Calculator() {
 			UpdateNum(NumToAdd);
 			UpdateNumLength(NumToAdd == 0 ? 0 : 1);
 		} else if (Num < 1e8) {
-			UpdateNum(Num * 10 + NumToAdd);
+			if (Num < 0) UpdateNum(Num * 10 - NumToAdd);
+			else UpdateNum(Num * 10 + NumToAdd);
 			UpdateNumLength(NumLength + 1);
 		}
 	}
@@ -50,23 +67,40 @@ function Calculator() {
 		num2: number,
 		OpID: number = OngoingOperationID
 	) {
-		if (OpID == 1) {
-			UpdateNumLength(Math.trunc(Math.log10(num1 / num2)) + 1);
-			return num1 / num2;
+		switch (OpID) {
+			case Operations.DEVIDE:
+				if (num2 === 0) {
+					UpdateInvalidOperation(true);
+					return 0;
+				}
+				UpdateNumLength(
+					num1 === 0 ? 0 : Math.trunc(Math.log10(Math.abs(num1 / num2))) + 1
+				);
+				return num1 / num2;
+			case Operations.MULTIPLY:
+				UpdateNumLength(
+					num1 * num2 === 0
+						? 0
+						: Math.trunc(Math.log10(Math.abs(num1 * num2))) + 1
+				);
+				return num1 * num2;
+			case Operations.SUBSTRACT:
+				UpdateNumLength(
+					num1 - num2 === 0
+						? 0
+						: Math.trunc(Math.log10(Math.abs(num1 - num2))) + 1
+				);
+				return num1 - num2;
+			case Operations.ADD:
+				UpdateNumLength(
+					num1 + num2 === 0
+						? 0
+						: Math.trunc(Math.log10(Math.abs(num1 + num2))) + 1
+				);
+				return num1 + num2;
+			default:
+				return 0;
 		}
-		if (OpID == 2) {
-			UpdateNumLength(Math.trunc(Math.log10(num1 * num2)) + 1);
-			return num1 * num2;
-		}
-		if (OpID == 3) {
-			UpdateNumLength(Math.trunc(Math.log10(num1 - num2)) + 1);
-			return num1 - num2;
-		}
-		if (OpID == 4) {
-			UpdateNumLength(Math.trunc(Math.log10(num1 + num2)) + 1);
-			return num1 + num2;
-		}
-		return 0;
 	}
 
 	function Calculation(ActionID: number) {
@@ -76,30 +110,37 @@ function Calculator() {
 		// CALCULATION FUNCTION
 		if (ActionID == 0) {
 			UpdatePreviousNum(CalculationOperationPair(PreviousNum, Num));
+			UpdateOngoingOperationID(OperationID);
 		} else {
-			UpdateNum(CalculationOperationPair(PreviousNum, Num));
+			if (OperationID != 0) {
+				UpdateNum(CalculationOperationPair(Num, Num, OperationID));
+			} else UpdateNum(CalculationOperationPair(PreviousNum, Num));
 			UpdatePreviousNum(0);
+			UpdateOngoingOperationID(0);
 		}
 		// SLOW DOWN BITCH
-		UpdateOngoingOperationID(OperationID);
 		UpdateOperationID(0);
 	}
 
 	function EraseNum() {
-		if (OngoingOperationID == 0) {
+		if (InvalidOperation) reset();
+		else if (OngoingOperationID === 0) {
 			UpdateNum(0);
 			UpdatePreviousNum(0);
 			UpdateNumLength(0);
+			UpdateOperationID(0);
 		} else if (Num != 0) {
 			UpdateNum(0);
 			UpdateNumLength(0);
+			UpdateOperationID(OngoingOperationID);
+			UpdateOngoingOperationID(0);
 		} else if (PreviousNum != 0) {
-			UpdatePreviousNum(0);
+			reset();
 		}
 	}
 
 	function UpdateOperation(OpID: number) {
-		if (OngoingOperationID != 0 && OperationID == 0) {
+		if (OngoingOperationID !== 0 && OperationID === 0) {
 			UpdateNum(CalculationOperationPair(Num, PreviousNum));
 		}
 		UpdateOperationID(OpID);
@@ -121,11 +162,13 @@ function Calculator() {
 				<style jsx>{`
 					#NumberIndicate p {
 						font-size: ${NumLength > 6
-							? 90 - (NumLength - 6) * 8 + 'px'
+							? 90 - (NumLength - (Num < 0 ? 5 : 6)) * 8 + 'px'
 							: '90px'};
 						transform: translate(
 							${0},
-							${NumLength > 6 ? -32 + (NumLength - 6) * 7 + 'px' : '-32px'}
+							${NumLength > 6
+								? -32 + (NumLength - (Num < 0 ? 5 : 6)) * 7 + 'px'
+								: '-32px'}
 						);
 					}
 				`}</style>
@@ -271,7 +314,9 @@ function Calculator() {
 				</button>
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[692px] left-[76%] text-[#fffeff]'
-					onClick={() => Calculation(1)}
+					onClick={() => {
+						Calculation(1);
+					}}
 				>
 					<div className='w-[22px] h-[4px] absolute top-[39px] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>
 					<div className='w-[22px] h-[4px] absolute top-[50px] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>

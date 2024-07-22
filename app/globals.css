@@ -9,12 +9,15 @@
 
 * {
 	font-family: helvetica;
-	transition: 0.3s;
-	transition-timing-function: ease-out;
 }
 
 body {
 	background-color: #0e0e0e;
+}
+
+button {
+	transition: 0.3s;
+	transition-timing-function: ease-out;
 }
 
 #ZeroButton {
