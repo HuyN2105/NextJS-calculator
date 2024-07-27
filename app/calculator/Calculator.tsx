@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const Operations = {
 	DIVIDE: 1,
@@ -10,6 +10,7 @@ const Operations = {
 };
 
 function Calculator() {
+	// Initializing variables
 	const [Num, UpdateNum] = useState(0);
 	const [PreviousNum, UpdatePreviousNum] = useState(0);
 	const [OperationID, UpdateOperationID] = useState(0); // 1: / | 2: * | 3: - | 4: + | 5: =
@@ -18,22 +19,59 @@ function Calculator() {
 	const [InvalidOperation, UpdateInvalidOperation] = useState(false);
 	const [NumIndicate, UpdateNumIndicate] = useState('0');
 
+	// Reference to ensure keydown function gets the latest updated data
+
+	const NumRef = useRef(Num);
+	const PreviousNumRef = useRef(PreviousNum);
+	const OngoingOperationIDRef = useRef(OngoingOperationID);
+	const OperationIDRef = useRef(OperationID);
+	const InvalidOperationRef = useRef(InvalidOperation);
+	const NumLengthRef = useRef(NumLength);
+
+	// Reference updater
+
 	useEffect(() => {
-		if (NumLength < 3) UpdateNumIndicate(Num + '');
+		NumRef.current = Num;
+	}, [Num]);
+	useEffect(() => {
+		PreviousNumRef.current = PreviousNum;
+	}, [PreviousNum]);
+	useEffect(() => {
+		OngoingOperationIDRef.current = OngoingOperationID;
+	}, [OngoingOperationID]);
+	useEffect(() => {
+		OperationIDRef.current = OperationID;
+	}, [OperationID]);
+	useEffect(() => {
+		InvalidOperationRef.current = InvalidOperation;
+	}, [InvalidOperation]);
+	useEffect(() => {
+		NumLengthRef.current = Num === 0 ? 0 : Math.trunc(Math.log10(Num)) + 1;
+	}, [Num]);
+
+	// Number formatting process
+
+	useEffect(() => {
+		if (NumLengthRef.current < 3) UpdateNumIndicate(NumRef.current.toString());
 		var IsPositive = true;
-		if (Num < 0) IsPositive = false;
-		var s = Math.abs(Num).toString();
-		var startIndex = s.search('.') - 1 < 0 ? NumLength - 1 : s.search('.') - 1;
+		if (NumRef.current < 0) IsPositive = false;
+		var s = Math.abs(NumRef.current).toString();
+		var startIndex =
+			s.search('.') - 1 < 0 ? NumLengthRef.current - 1 : s.search('.') - 1;
 		var count = 0;
 		for (var i = startIndex; i > 0; i--) {
 			count++;
-			if (count == 3) {
+			if (count === 3) {
 				count = 0;
 				s = s.substring(0, i) + ',' + s.substring(i, s.length);
 			}
 		}
-		UpdateNumIndicate(InvalidOperation ? 'Error' : (IsPositive ? '' : '-') + s);
+		UpdateNumIndicate(
+			InvalidOperationRef.current ? 'Error' : (IsPositive ? '' : '-') + s
+		);
 	}, [Num, InvalidOperation]);
+
+	// Reset all variables to it's initial state
 
 	function reset() {
 		UpdateNum(0);
@@ -44,23 +82,27 @@ function Calculator() {
 		UpdateInvalidOperation(false);
 	}
 
+	// Changing the current number value on number button pressed
+
 	function AddToNum(NumToAdd: number) {
-		if (OperationID != 0) {
-			UpdateOngoingOperationID(OperationID);
+		if (OperationIDRef.current !== 0) {
+			UpdateOngoingOperationID(OperationIDRef.current);
 			UpdateOperationID(0);
-			if (PreviousNum != 0) {
+			if (PreviousNumRef.current !== 0) {
 				Calculation(0);
 			} else {
-				UpdatePreviousNum(Num);
+				UpdatePreviousNum(NumRef.current);
 			}
 			UpdateNum(NumToAdd);
-			UpdateNumLength(NumToAdd == 0 ? 0 : 1);
-		} else if (Num < 1e8) {
-			if (Num < 0) UpdateNum(Num * 10 - NumToAdd);
-			else UpdateNum(Num * 10 + NumToAdd);
+			UpdateNumLength(NumToAdd === 0 ? 0 : 1);
+		} else if (NumRef.current < 1e8) {
+			if (NumRef.current < 0) UpdateNum(NumRef.current * 10 - NumToAdd);
+			else UpdateNum(NumRef.current * 10 + NumToAdd);
 			UpdateNumLength(NumLength + 1);
 		}
 	}
+
+	// Part of calculation process
 
 	function CalculationOperationPair(
 		num1: number,
@@ -103,40 +145,41 @@ function Calculator() {
 		}
 	}
 
+	// The calculation process
+
 	function Calculation(ActionID: number) {
 		// ActionID is for determining whether the calculator should do the calculation needed with the current num and the old num to continue with the math or just display the answer
 		// ActionID: 0: to be continue with the math | 1: display the answer
 
 		// CALCULATION FUNCTION
-		if (ActionID == 0) {
-			UpdatePreviousNum(CalculationOperationPair(PreviousNum, Num));
+		if (ActionID === 0) {
+			UpdatePreviousNum(
+				CalculationOperationPair(PreviousNum, Num, OperationID)
+			);
 			UpdateOngoingOperationID(OperationID);
 		} else {
-			if (OperationID != 0) {
+			if (OperationID !== 0) {
 				UpdateNum(CalculationOperationPair(Num, Num, OperationID));
 			} else UpdateNum(CalculationOperationPair(PreviousNum, Num));
 			UpdatePreviousNum(0);
 			UpdateOngoingOperationID(0);
 		}
-		// SLOW DOWN BITCH
 		UpdateOperationID(0);
 	}
 
 	function EraseNum() {
-		if (InvalidOperation) reset();
-		else if (OngoingOperationID === 0) {
+		if (InvalidOperationRef.current) reset();
+		else if (OngoingOperationIDRef.current === 0) {
 			UpdateNum(0);
 			UpdatePreviousNum(0);
 			UpdateNumLength(0);
 			UpdateOperationID(0);
-		} else if (Num != 0) {
+		} else if (NumRef.current !== 0) {
 			UpdateNum(0);
 			UpdateNumLength(0);
-			UpdateOperationID(OngoingOperationID);
+			UpdateOperationID(OngoingOperationIDRef.current);
 			UpdateOngoingOperationID(0);
-		} else if (PreviousNum != 0) {
-			reset();
-		}
+		} else if (PreviousNumRef.current !== 0) reset();
 	}
 
 	function UpdateOperation(OpID: number) {
@@ -145,6 +188,31 @@ function Calculator() {
 		}
 		UpdateOperationID(OpID);
 	}
+
+	// Keydown process ( including backspace function and number input on keyboard for pc user )
+
+	useEffect(() => {
+		// Main handler
+		const keyDownHandler = (e: any) => {
+			if (e.key === 'Escape') EraseNum();
+			else if (e.key === '/') UpdateOperation(1);
+			else if (e.key === '*') UpdateOperation(2);
+			else if (e.key === 'x') UpdateOperation(2);
+			else if (e.key === '-') UpdateOperation(3);
+			else if (e.key === '+') UpdateOperation(4);
+			else if (e.key !== ' ' && !isNaN(e.key)) AddToNum(+e.key);
+			else if (e.key === '%') UpdateNum(NumRef.current / 100);
+		};
+
+		document.addEventListener('keydown', keyDownHandler);
+
+		// clean up
+		return () => {
+			document.removeEventListener('keydown', keyDownHandler);
+		};
+	}, []);
+
+	// App
 
 	return (
 		<>
@@ -161,13 +229,17 @@ function Calculator() {
 				{/* LOWERING NUMBER FONT SIZE ON NUMBER GETTING LARGER UP TO AVOID SCREEN OVERFLOW */}
 				<style jsx>{`
 					#NumberIndicate p {
-						font-size: ${NumLength > 6
-							? 90 - (NumLength - (Num < 0 ? 5 : 6)) * 8 + 'px'
+						font-size: ${NumLengthRef.current > 6
+							? 90 -
+							  (NumLengthRef.current - (NumRef.current < 0 ? 5 : 6)) * 8 +
+							  'px'
 							: '90px'};
 						transform: translate(
 							${0},
-							${NumLength > 6
-								? -32 + (NumLength - (Num < 0 ? 5 : 6)) * 7 + 'px'
+							${NumLengthRef.current > 6
+								? -32 +
+								  (NumLengthRef.current - (NumRef.current < 0 ? 5 : 6)) * 7 +
+								  'px'
 								: '-32px'}
 						);
 					}
@@ -204,7 +276,7 @@ function Calculator() {
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[290px] left-[76%] text-[#fffeff]'
 					onClick={() => UpdateOperation(1)}
-					id={`${OperationID == 1 ? 'selected' : ''}`}
+					id={`${OperationID === 1 ? 'selected' : ''}`}
 				>
 					<div className='w-[5px] h-[5px] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-3 bg-[#fffeff]'></div>
 					<div className='w-[5px] h-[5px] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-1.5 bg-[#fffeff]'></div>
