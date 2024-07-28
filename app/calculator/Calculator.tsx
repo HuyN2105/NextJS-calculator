@@ -1,5 +1,6 @@
 'use client';
 
+import { calculateSizeAdjustValues } from 'next/dist/server/font-utils';
 import { useEffect, useRef, useState } from 'react';
 
 const Operations = {
@@ -18,6 +19,22 @@ function Calculator() {
 	const [NumLength, UpdateNumLength] = useState(0);
 	const [InvalidOperation, UpdateInvalidOperation] = useState(false);
 	const [NumIndicate, UpdateNumIndicate] = useState('0');
+	const [CompletedCalculation, UpdateCompletedCalculation] = useState(false);
+
+	// { sr for this comment but it's just for the annoying prettier not capable of ignore single line but the whole file }
+	// prettier-ignore
+	const KeyActions: {[key: string]: () => void} = {
+		'Escape': () => EraseNum(),
+		'/': () => UpdateOperation(1),
+		'*': () => UpdateOperation(2),
+		'x': () => UpdateOperation(2),
+		'-': () => UpdateOperation(3),
+		'+': () => UpdateOperation(4),
+		'%': () => UpdateNum(Number((NumRef.current / 100).toPrecision(12))),
+		'Enter': () => Calculation(1),
+		'=': () => Calculation(1),
+		'Backspace': () => UpdateNum(Math.trunc(NumRef.current / 10))
+	};
 
 	// Reference to ensure keydown function gets the latest updated data
 
@@ -27,6 +44,7 @@ function Calculator() {
 	const OperationIDRef = useRef(OperationID);
 	const InvalidOperationRef = useRef(InvalidOperation);
 	const NumLengthRef = useRef(NumLength);
+	const CompletedCalculationRef = useRef(CompletedCalculation);
 
 	// Reference updater
 
@@ -48,6 +66,9 @@ function Calculator() {
 	useEffect(() => {
 		NumLengthRef.current = Num === 0 ? 0 : Math.trunc(Math.log10(Num)) + 1;
 	}, [Num]);
+	useEffect(() => {
+		CompletedCalculationRef.current = CompletedCalculation;
+	}, [CompletedCalculation]);
 
 	// Number formatting process
 
@@ -55,15 +76,15 @@ function Calculator() {
 		if (NumLengthRef.current < 3) UpdateNumIndicate(NumRef.current.toString());
 		var IsPositive = true;
 		if (NumRef.current < 0) IsPositive = false;
-		var s = Math.abs(NumRef.current).toString();
+		var s = Math.abs(NumRef.current).toString().replace('.', ',');
 		var startIndex =
-			s.search('.') - 1 < 0 ? NumLengthRef.current - 1 : s.search('.') - 1;
+			s.search(',') - 1 < 0 ? NumLengthRef.current - 1 : s.search(',') - 1;
 		var count = 0;
 		for (var i = startIndex; i > 0; i--) {
 			count++;
 			if (count === 3) {
 				count = 0;
-				s = s.substring(0, i) + ',' + s.substring(i, s.length);
+				s = s.substring(0, i) + '.' + s.substring(i, s.length);
 			}
 		}
 		UpdateNumIndicate(
@@ -80,12 +101,16 @@ function Calculator() {
 		UpdateOngoingOperationID(0);
 		UpdateNumLength(0);
 		UpdateInvalidOperation(false);
+		UpdateCompletedCalculation(false);
 	}
 
 	// Changing the current number value on number button pressed
 
 	function AddToNum(NumToAdd: number) {
-		if (OperationIDRef.current !== 0) {
+		if (CompletedCalculationRef.current) {
+			reset();
+			UpdateNum(NumToAdd);
+		} else if (OperationIDRef.current !== 0) {
 			UpdateOngoingOperationID(OperationIDRef.current);
 			UpdateOperationID(0);
 			if (PreviousNumRef.current !== 0) {
@@ -107,7 +132,7 @@ function Calculator() {
 	function CalculationOperationPair(
 		num1: number,
 		num2: number,
-		OpID: number = OngoingOperationID
+		OpID: number = OngoingOperationIDRef.current
 	) {
 		switch (OpID) {
 			case Operations.DIVIDE:
@@ -141,7 +166,7 @@ function Calculator() {
 				);
 				return num1 + num2;
 			default:
-				return 0;
+				return num1 === 0 ? num2 : num1;
 		}
 	}
 
@@ -154,15 +179,29 @@ function Calculator() {
 		// CALCULATION FUNCTION
 		if (ActionID === 0) {
 			UpdatePreviousNum(
-				CalculationOperationPair(PreviousNum, Num, OperationID)
+				CalculationOperationPair(
+					PreviousNumRef.current,
+					NumRef.current,
+					OperationIDRef.current
+				)
 			);
-			UpdateOngoingOperationID(OperationID);
+			UpdateOngoingOperationID(OperationIDRef.current);
 		} else {
-			if (OperationID !== 0) {
-				UpdateNum(CalculationOperationPair(Num, Num, OperationID));
-			} else UpdateNum(CalculationOperationPair(PreviousNum, Num));
+			if (OperationIDRef.current !== 0) {
+				UpdateNum(
+					CalculationOperationPair(
+						NumRef.current,
+						NumRef.current,
+						OperationIDRef.current
+					)
+				);
+			} else
+				UpdateNum(
+					CalculationOperationPair(PreviousNumRef.current, NumRef.current)
+				);
 			UpdatePreviousNum(0);
 			UpdateOngoingOperationID(0);
+			UpdateCompletedCalculation(true);
 		}
 		UpdateOperationID(0);
 	}
@@ -193,15 +232,15 @@ function Calculator() {
 
 	useEffect(() => {
 		// Main handler
-		const keyDownHandler = (e: any) => {
-			if (e.key === 'Escape') EraseNum();
-			else if (e.key === '/') UpdateOperation(1);
-			else if (e.key === '*') UpdateOperation(2);
-			else if (e.key === 'x') UpdateOperation(2);
-			else if (e.key === '-') UpdateOperation(3);
-			else if (e.key === '+') UpdateOperation(4);
-			else if (e.key !== ' ' && !isNaN(e.key)) AddToNum(+e.key);
-			else if (e.key === '%') UpdateNum(NumRef.current / 100);
+		const keyDownHandler = (e: KeyboardEvent) => {
+			if (KeyActions[e.key]) {
+				KeyActions[e.key]();
+			} else if (e.key !== ' ' && !isNaN(+e.key)) AddToNum(+e.key);
+			else
+				console.log(
+					`Key pressed was excluded for the calculator: %c${e.key}`,
+					'color: #bada55'
+				);
 		};
 
 		document.addEventListener('keydown', keyDownHandler);
@@ -269,7 +308,7 @@ function Calculator() {
 				</button>
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#a5a5a5] fixed top-[290px] left-[52%] text-black'
-					onClick={() => UpdateNum(Num / 100)}
+					onClick={() => UpdateNum(Number((Num / 100).toPrecision(12)))}
 				>
 					%
 				</button>
@@ -386,9 +425,7 @@ function Calculator() {
 				</button>
 				<button
 					className='w-1/5 h-[10%] rounded-full bg-[#ff9f0a] fixed top-[692px] left-[76%] text-[#fffeff]'
-					onClick={() => {
-						Calculation(1);
-					}}
+					onClick={() => Calculation(1)}
 				>
 					<div className='w-[22px] h-[4px] absolute top-[39px] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>
 					<div className='w-[22px] h-[4px] absolute top-[50px] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#fffeff]'></div>
