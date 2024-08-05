@@ -176,6 +176,9 @@ function Calculator() {
 		// ActionID is for determining whether the calculator should do the calculation needed with the current num and the old num to continue with the math or just display the answer
 		// ActionID: 0: to be continue with the math | 1: display the answer
 
+		// DEBUG
+		console.log(NumRef.current, PreviousNumRef.current);
+
 		// CALCULATION FUNCTION
 		if (ActionID === 0) {
 			UpdatePreviousNum(
@@ -222,9 +225,12 @@ function Calculator() {
 	}
 
 	function UpdateOperation(OpID: number) {
-		if (OngoingOperationID !== 0 && OperationID === 0) {
-			UpdateNum(CalculationOperationPair(Num, PreviousNum));
+		if (OngoingOperationIDRef.current !== 0 && OperationIDRef.current === 0) {
+			UpdateNum(
+				CalculationOperationPair(NumRef.current, PreviousNumRef.current)
+			);
 		}
+		if (CompletedCalculationRef.current) UpdateCompletedCalculation(false);
 		UpdateOperationID(OpID);
 	}
 
@@ -248,6 +254,17 @@ function Calculator() {
 		// clean up
 		return () => {
 			document.removeEventListener('keydown', keyDownHandler);
+		};
+	}, []);
+
+	useEffect(() => {
+		const touchHandler = (e: TouchEvent) => {
+			alert(JSON.stringify(e.touches));
+		};
+
+		document.addEventListener('touchstart', touchHandler);
+		return () => {
+			document.removeEventListener('touchmove', touchHandler);
 		};
 	}, []);
 
