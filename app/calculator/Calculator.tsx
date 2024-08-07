@@ -314,7 +314,7 @@ function Calculator() {
 			.getElementById('NumberIndicate')!
 			.addEventListener('touchend', touchEndHandler);
 		return () => {
-			document.removeEventListener('touchend', touchStartHandler);
+			document.removeEventListener('touchstart', touchStartHandler);
 			document.removeEventListener('touchend', touchEndHandler);
 		};
 	}, []);
