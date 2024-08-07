@@ -257,16 +257,16 @@ function Calculator() {
 		};
 	}, []);
 
-	useEffect(() => {
-		const touchHandler = (e: TouchEvent) => {
-			alert(JSON.stringify(e.touches));
-		};
+	// useEffect(() => {
+	// 	const touchHandler = (e: TouchEvent) => {
+	// 		alert(JSON.stringify(e.touches));
+	// 	};
 
-		document.addEventListener('touchstart', touchHandler);
-		return () => {
-			document.removeEventListener('touchmove', touchHandler);
-		};
-	}, []);
+	// 	document.addEventListener('touchstart', touchHandler);
+	// 	return () => {
+	// 		document.removeEventListener('touchmove', touchHandler);
+	// 	};
+	// }, []);
 
 	// App
 
