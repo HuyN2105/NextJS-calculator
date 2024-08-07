@@ -70,6 +70,16 @@ function Calculator() {
 		CompletedCalculationRef.current = CompletedCalculation;
 	}, [CompletedCalculation]);
 
+	// Variables for swipe to undo number add function on mobile device
+
+	const [TouchStartPositionX, UpdateTouchStartPositionX] = useState(-1);
+
+	const TouchStartPositionXRef = useRef(TouchStartPositionX);
+
+	useEffect(() => {
+		TouchStartPositionXRef.current = TouchStartPositionX;
+	}, [TouchStartPositionX]);
+
 	// Number formatting process
 
 	useEffect(() => {
@@ -257,16 +267,57 @@ function Calculator() {
 		};
 	}, []);
 
-	// useEffect(() => {
-	// 	const touchHandler = (e: TouchEvent) => {
-	// 		alert(JSON.stringify(e.touches));
-	// 	};
+	// Swipe to undo number add function for mobile device
 
-	// 	document.addEventListener('touchstart', touchHandler);
-	// 	return () => {
-	// 		document.removeEventListener('touchmove', touchHandler);
-	// 	};
-	// }, []);
+	useEffect(() => {
+		const touchStartHandler = (e: any) => {
+			e = e || window.event;
+
+			var pageX = e.pageX;
+			var pageY = e.pageY;
+
+			// IE 8
+			if (pageX === undefined) {
+				pageX =
+					e.clientX +
+					document.body.scrollLeft +
+					document.documentElement.scrollLeft;
+				pageY =
+					e.clientY +
+					document.body.scrollTop +
+					document.documentElement.scrollTop;
+			}
+			if (pageY < 225) UpdateTouchStartPositionX(pageX);
+		};
+		const touchEndHandler = (e: any) => {
+			if (TouchStartPositionXRef.current != -1) {
+				e = e || window.event;
+
+				var pageX = e.pageX;
+
+				// IE 8
+				if (pageX === undefined)
+					pageX =
+						e.clientX +
+						document.body.scrollLeft +
+						document.documentElement.scrollLeft;
+				if (pageX > TouchStartPositionXRef.current)
+					UpdateNum(Math.trunc(NumRef.current / 10));
+				UpdateTouchStartPositionX(-1);
+			}
+		};
+
+		document
+			.getElementById('NumberIndicate')!
+			.addEventListener('touchstart', touchStartHandler);
+		document
+			.getElementById('NumberIndicate')!
+			.addEventListener('touchend', touchEndHandler);
+		return () => {
+			document.removeEventListener('touchend', touchStartHandler);
+			document.removeEventListener('touchend', touchEndHandler);
+		};
+	}, []);
 
 	// App
 
